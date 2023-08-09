@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'register.dart';
 import 'forgot.dart';
 import 'home.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 class LoginPage extends StatelessWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  FirebaseAuth _auth = FirebaseAuth.instance;
+  var emailEditingController = TextEditingController();
+  var passwordEditingController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -14,11 +18,26 @@ class LoginPage extends StatelessWidget {
         child: Center(
           child: Column(
             children: [
-              TextField(decoration: InputDecoration(hintText: "Enter email"),),
-              TextField(decoration: InputDecoration(hintText: "Enter password"), obscureText: true,),
+              TextField(decoration: InputDecoration(hintText: "Enter email"), controller: emailEditingController,),
+              TextField(decoration: InputDecoration(hintText: "Enter password"), obscureText: true, controller: passwordEditingController,),
               ElevatedButton(onPressed: (){
-                Navigator.push(context,
-                MaterialPageRoute(builder: (context)=> HomePage()));
+
+
+                _auth.signInWithEmailAndPassword(email: emailEditingController.text, password: passwordEditingController.text)
+                    .then((val){
+                  if (val != null){
+                    User user = val.user!;
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context)=> HomePage(currentUserId: user.uid,)));
+                  }
+                  else {
+                    print("Something is wrong");
+                  }
+
+                }).catchError((err){
+                  print(err);
+                });
+
 
               }, child: Text("Login")),
               TextButton(onPressed: (){
